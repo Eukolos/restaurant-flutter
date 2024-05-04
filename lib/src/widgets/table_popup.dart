@@ -88,7 +88,7 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                   children: [
                     TextButton(
                         onPressed: () {
-                          _showPopup(context, widget.index);
+                          //  _showPopup(context, widget.index);
                         },
                         style: TextButton.styleFrom(
                           minimumSize: const Size(150, 75),
@@ -109,7 +109,7 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                         if (widget.index == 0) {
                           ref.read(accountInactiveProvider(1));
                         } else {
-                          ref.read(accountInactiveProvider(widget.index+1));
+                          ref.read(accountInactiveProvider(widget.index + 1));
                         }
                         Navigator.of(context).pop();
                         print('Masa  + 1 tıklandı');
