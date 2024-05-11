@@ -34,6 +34,7 @@ class Account {
   double? totalPrice;
   bool? isActive;
   List<Order?>? orders;
+  String customerName = 'Müşteri Adı';
 
   Account({this.id, this.totalPrice, this.isActive, this.orders});
 

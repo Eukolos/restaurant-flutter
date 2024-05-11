@@ -20,17 +20,23 @@ class TablePopupWidget extends ConsumerStatefulWidget {
 }
 
 class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
+  bool isEditing = false;
+
   @override
   Widget build(BuildContext context) {
+
     return ProviderScope(
       child: Consumer(builder: (context, read, child) {
         final productsProvider = ref.watch(accountProvider(widget.index + 1));
-
         return productsProvider.when(
           data: (data) {
+            double tax = data.totalPrice! * 0.20;
+            double totalPrice = data.totalPrice! + tax;
+
             // order list to list
             List<Order> orders = data.orders!.map((e) => e!).toList();
             return AlertDialog(
+
               title: Text('Masa ${widget.index + 1}'),
               titlePadding: const EdgeInsets.only(top: 30, left: 80, right: 20),
               content: SizedBox(
@@ -69,9 +75,34 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              children: [
+                                isEditing
+                                    ? SizedBox(
+                                        width: 200,
+                                        child: TextField(
+                                          decoration: const InputDecoration(
+                                            hintText: 'Müşteri Adı',
+                                          ),
+                                          onChanged: (value) {
+                                            data.customerName = value;
+                                          },
+                                        ),
+                                      )
+                                    : Text(data!.customerName),
+                                IconButton(
+                                    onPressed: () {
+                                      setState(() {
+
+                                        isEditing = !isEditing;
+                                      });
+                                    },
+                                    icon: Icon(Icons.edit)),
+                              ],
+                            ),
                             Text('Matrah: ₺${data!.totalPrice}'),
-                            Text('KDV: ₺ ${data.totalPrice! * 0.20}'),
-                            Text('Toplam: ₺ ${data.totalPrice! * 1.20}'),
+                            Text('KDV: ₺ ${tax.roundToDouble()}'),
+                            Text('Toplam: ₺ ${totalPrice.roundToDouble()}'),
                             Text(
                                 'Masa Durumu: ${data.isActive! ? 'Açık' : 'Kapalı'} '),
                           ],
@@ -88,7 +119,7 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                   children: [
                     TextButton(
                         onPressed: () {
-                          //  _showPopup(context, widget.index);
+                          _showPopup(context, widget.index);
                         },
                         style: TextButton.styleFrom(
                           minimumSize: const Size(150, 75),
@@ -111,6 +142,7 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                         } else {
                           ref.read(accountInactiveProvider(widget.index + 1));
                         }
+                        data.customerName = 'Müşteri Adı';
                         Navigator.of(context).pop();
                         print('Masa  + 1 tıklandı');
                       },

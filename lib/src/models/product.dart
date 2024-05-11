@@ -4,12 +4,15 @@ class Product {
   int? price;
   int? cost;
   String? category;
+  int? stock;
   int quantity = 0;
 
-  Product({this.id, this.name, this.price, this.cost, this.category});
-
+  Product({this.id, this.name, this.price, this.cost, this.category, this.stock});
+// if not more then stock
   void increaseQuantity() {
-    quantity = (quantity ?? 0) + 1;
+    if (quantity != null && stock != null && quantity! < stock!) {
+      quantity = quantity! + 1;
+    }
   }
 
   void decreaseQuantity() {
@@ -24,6 +27,7 @@ class Product {
     price = json['price'];
     cost = json['cost'];
     category = json['category'];
+    stock = json['quantity'];
   }
 
   Map<String, dynamic> toJson() {
@@ -33,6 +37,7 @@ class Product {
     data['price'] = price;
     data['cost'] = cost;
     data['category'] = category;
+    data['quantity'] = stock;
     return data;
   }
 }

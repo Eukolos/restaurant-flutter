@@ -20,7 +20,8 @@ final postProductsProvider = FutureProvider.family<void, PostData>((ref, postDat
 
     String tableId = ( postData.id + 1 ).toString();
     List<Map<String, dynamic>> productsJson = productPostDatas.map((product) => product.toJson()).toList();
-
+    print("++++" +  productsJson.toString() + "++++");
+    print(apiUrl + tableId);
 
     final response = await client.post(apiUrl + tableId, data:productsJson);
 

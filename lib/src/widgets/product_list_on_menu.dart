@@ -7,17 +7,17 @@ import '../models/product.dart';
 import '../providers/post_products_provider.dart';
 import '../providers/table_status_provider.dart';
 
-class ProductListWidget extends ConsumerStatefulWidget {
+class ProductListWidgetOnMenu extends ConsumerStatefulWidget {
   final int id;
-  const ProductListWidget({
+  const ProductListWidgetOnMenu({
     required this.id,
     super.key});
 
   @override
-  ConsumerState createState() => _ProductListWidgetState();
+  ConsumerState createState() => _ProductListWidgetOnMenuState();
 }
 
-class _ProductListWidgetState extends ConsumerState<ProductListWidget> {
+class _ProductListWidgetOnMenuState extends ConsumerState<ProductListWidgetOnMenu> {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
@@ -57,60 +57,15 @@ class _ProductListWidgetState extends ConsumerState<ProductListWidget> {
                             style: const TextStyle(fontSize: 18),
                           ),
                           const SizedBox(width: 20),
-                          const Text('Miktar:'),
-                          const SizedBox(width: 5),
-                          SizedBox(
-                            width: 100,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      if (data[index].quantity! > 0) {
-                                        data[index].decreaseQuantity();
-                                      }
-                                    });
-                                  },
-                                  child: const Icon(Icons.remove),
-                                ),
-                                Text(
-                                  '${data[index].quantity!}',
-                                  style: const TextStyle(fontSize: 18),
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      data[index].increaseQuantity();
-                                    });
-                                  },
-                                  child: const Icon(Icons.add),
-                                ),
-                              ],
-                            ),
-                          ),
+
+
                         ],
                       ),
                     );
                   },
                 ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    ref.read(postProductsProvider(PostData(id: widget.id, products: data)));
-                    ref.read(tableStatusProvider);
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Ürünleri Ekle', style: TextStyle(color: Colors.green)),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Kapat', style: TextStyle(color: Color(0xFFFA7070))),
-                ),
-              ],
+
             );
           },
           loading: () => const LoadingIndicator(
