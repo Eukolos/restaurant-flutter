@@ -4,13 +4,16 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:restaurant_management_system/src/models/account.dart';
 import 'package:restaurant_management_system/src/providers/account_inactive_provider.dart';
 import 'package:restaurant_management_system/src/widgets/product_list.dart';
-
 import '../providers/account_provider.dart';
 
 class TablePopupWidget extends ConsumerStatefulWidget {
   final int index;
+  final List<String> customerNames;
+  Function(String) addNameToList;
 
-  const TablePopupWidget({
+  TablePopupWidget({
+    required this.addNameToList,
+    required this.customerNames,
     required this.index,
     super.key,
   });
@@ -21,22 +24,21 @@ class TablePopupWidget extends ConsumerStatefulWidget {
 
 class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
   bool isEditing = false;
+  String? selectedCustomerName;
 
   @override
   Widget build(BuildContext context) {
-
     return ProviderScope(
-      child: Consumer(builder: (context, read, child) {
+      child: Consumer(builder: (context, ref, child) {
         final productsProvider = ref.watch(accountProvider(widget.index + 1));
         return productsProvider.when(
           data: (data) {
             double tax = data.totalPrice! * 0.20;
             double totalPrice = data.totalPrice! + tax;
-
+            selectedCustomerName ??= data.customerName;
             // order list to list
             List<Order> orders = data.orders!.map((e) => e!).toList();
             return AlertDialog(
-
               title: Text('Masa ${widget.index + 1}'),
               titlePadding: const EdgeInsets.only(top: 30, left: 80, right: 20),
               content: SizedBox(
@@ -57,8 +59,9 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                               return ListTile(
                                 title: Text('${orders[index].name}'),
                                 subtitle: Text(
-                                    '${orders[index].category?.replaceAll('_', ' ') ?? ''}',
-                                    style: const TextStyle(fontSize: 10)),
+                                  '${orders[index].category?.replaceAll('_', ' ') ?? ''}',
+                                  style: const TextStyle(fontSize: 10),
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -77,34 +80,60 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                           children: [
                             Row(
                               children: [
-                                isEditing
-                                    ? SizedBox(
-                                        width: 200,
-                                        child: TextField(
-                                          decoration: const InputDecoration(
-                                            hintText: 'Müşteri Adı',
-                                          ),
-                                          onChanged: (value) {
-                                            data.customerName = value;
-                                          },
-                                        ),
-                                      )
-                                    : Text(data!.customerName),
-                                IconButton(
+                                Container(
+                                  height: 50,
+                                  width: 200,
+                                  child: TextField(
+                                    controller: TextEditingController(
+                                        text: data.customerName),
+                                    onChanged: (value) {
+                                      selectedCustomerName = value;
+                                      data.customerName = value;
+                                    },
+                                    decoration: const InputDecoration(
+                                      labelText: 'Müşteri Adı',
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 50,
+                                  width: 100,
+                                  child: TextButton(
                                     onPressed: () {
                                       setState(() {
-
-                                        isEditing = !isEditing;
+                                        data.customerName = selectedCustomerName!;
+                                        widget.addNameToList(
+                                            selectedCustomerName!);
                                       });
                                     },
-                                    icon: Icon(Icons.edit)),
+                                    child: const Text('Ekle Ismi'),
+                                  ),
+                                ),
                               ],
                             ),
-                            Text('Matrah: ₺${data!.totalPrice}'),
+                            Container(
+                              width: 200,
+                              height: 50,
+                              child: DropdownButtonFormField(
+                                items: widget.customerNames.map((String value) {
+                                  return DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    data.customerName = value as String;
+                                    selectedCustomerName = value as String;
+                                  });
+                                },
+                              ),
+                            ),
+                            Text('Matrah: ₺${data.totalPrice}'),
                             Text('KDV: ₺ ${tax.roundToDouble()}'),
                             Text('Toplam: ₺ ${totalPrice.roundToDouble()}'),
                             Text(
-                                'Masa Durumu: ${data.isActive! ? 'Açık' : 'Kapalı'} '),
+                                'Masa Durumu: ${data.isActive! ? 'Açık' : 'Kapalı'}'),
                           ],
                         ),
                       ],
@@ -118,52 +147,57 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     TextButton(
-                        onPressed: () {
-                          _showPopup(context, widget.index);
-                        },
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(150, 75),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add, color: Colors.green, size: 25),
-                            Text('Ürün Ekle',
-                                style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16)),
-                          ],
-                        )),
+                      onPressed: () {
+                        _showPopup(context, widget.index);
+                      },
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(150, 75),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add, color: Colors.green, size: 25),
+                          Text(
+                            'Ürün Ekle',
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     TextButton(
                       onPressed: () {
-                        if (widget.index == 0) {
-                          ref.read(accountInactiveProvider(1));
-                        } else {
-                          ref.read(accountInactiveProvider(widget.index + 1));
-                        }
-                        data.customerName = 'Müşteri Adı';
+                        ref.read(accountInactiveProvider(widget.index + 1));
                         Navigator.of(context).pop();
-                        print('Masa  + 1 tıklandı');
+                        print('Masa ${widget.index + 1} tıklandı');
                       },
-                      child: const Text('Hesap Kapat',
-                          style: TextStyle(
-                              color: Colors.deepPurple,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
+                      child: const Text(
+                        'Hesap Kapat',
+                        style: TextStyle(
+                          color: Colors.deepPurple,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    print('Masa  + 1 tıklandı');
+                    print('Masa ${widget.index + 1} tıklandı');
                   },
-                  child: const Text('Kapat',
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16)),
+                  child: const Text(
+                    'Kapat',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -188,8 +222,9 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
 
 void _showPopup(BuildContext context, int id) {
   showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ProductListWidget(id: id);
-      });
+    context: context,
+    builder: (BuildContext context) {
+      return ProductListWidget(id: id);
+    },
+  );
 }

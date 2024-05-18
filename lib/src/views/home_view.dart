@@ -33,6 +33,26 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget build(BuildContext context) {
     int count = 0;
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
+    List<String> customerNames = [
+      'Ali',
+      'Veli',
+      'Ayşe',
+      'Fatma',
+      'Mehmet',
+      'Zeynep',
+      'Kemal',
+      'Hüseyin',
+      'Hasan',
+      'Hülya',
+      'Nur',
+      'Emre',
+      'Eren',
+      'Ece',
+      'Elif',
+      'Ebru',
+      'Ezgi',
+
+    ];
     return ProviderScope(
       child: Scaffold(
         endDrawer: Drawer(
@@ -93,7 +113,9 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     data.length,
                     (index) => GestureDetector(
                       onTap: () {
-                        _showPopup(context, index);
+                        _showPopup(context, index, customerNames, (String name) {
+                          customerNames.add(name);
+                        });
                         print('Masa ${index + 1} tıklandı');
                       },
                       child: Container(
@@ -138,12 +160,15 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 }
 
-void _showPopup(BuildContext context, int index) {
+void _showPopup(BuildContext context, int index, List<String> customerNames, Function(String) addNameToList) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return TablePopupWidget(
         index: index,
+          customerNames:customerNames,
+        addNameToList: addNameToList,
+
       );
     },
   );

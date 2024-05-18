@@ -12,11 +12,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  google_fonts: 6.1.0
+  google_fonts: ^6.2.1
   flutter_svg: ^2.0.9
   flutter_riverpod: ^2.4.10
   equatable: ^2.0.5
-  go_router: ^13.1.0
+  go_router: ^14.1.0
   jwt_decoder: ^2.0.1
   url_launcher: ^6.0.20
   dio: ^5.4.0
@@ -26,14 +26,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_native_splash: ^2.3.8
+  flutter_native_splash: ^2.4.0
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^4.0.0
 
-flutter_native_splash:
-  image: assets/images/splash_logo.png
-  color: "#9BB0C1"
-  icon_background_color: "#9BB0C1"
 
 
 
