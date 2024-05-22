@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:restaurant_management_system/src/model/customer.dart';
 import 'package:restaurant_management_system/src/models/account.dart';
 import 'package:restaurant_management_system/src/providers/account_inactive_provider.dart';
 import 'package:restaurant_management_system/src/widgets/product_list.dart';
@@ -8,12 +9,12 @@ import '../providers/account_provider.dart';
 
 class TablePopupWidget extends ConsumerStatefulWidget {
   final int index;
-  final List<String> customerNames;
-  Function(String) addNameToList;
+  List<Customer> customers;
+  Function(Customer) addCustomerToList;
 
   TablePopupWidget({
-    required this.addNameToList,
-    required this.customerNames,
+    required this.addCustomerToList,
+    required this.customers,
     required this.index,
     super.key,
   });
@@ -24,7 +25,6 @@ class TablePopupWidget extends ConsumerStatefulWidget {
 
 class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
   bool isEditing = false;
-  String? selectedCustomerName;
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +33,9 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
         final productsProvider = ref.watch(accountProvider(widget.index + 1));
         return productsProvider.when(
           data: (data) {
+            data.date = DateTime.now();
             double tax = data.totalPrice! * 0.20;
             double totalPrice = data.totalPrice! + tax;
-            selectedCustomerName ??= data.customerName;
             // order list to list
             List<Order> orders = data.orders!.map((e) => e!).toList();
             return AlertDialog(
@@ -78,53 +78,48 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Container(
-                                  height: 50,
-                                  width: 200,
-                                  child: TextField(
-                                    controller: TextEditingController(
-                                        text: data.customerName),
-                                    onChanged: (value) {
-                                      selectedCustomerName = value;
-                                      data.customerName = value;
-                                    },
-                                    decoration: const InputDecoration(
-                                      labelText: 'Müşteri Adı',
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 50,
-                                  width: 100,
-                                  child: TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        data.customerName = selectedCustomerName!;
-                                        widget.addNameToList(
-                                            selectedCustomerName!);
-                                      });
-                                    },
-                                    child: const Text('Ekle Ismi'),
-                                  ),
-                                ),
-                              ],
+                            // clock like 12:00 22.12.2024 from DateTime
+                            Text(
+                              'Sipariş Tarihi:   ${data.date!.hour}:${data.date!.minute}   ${data.date!.day}.${data.date!.month}.${data.date!.year}',
+                            ),
+                            SizedBox(height: 40),
+
+                            Container(
+                              height: 50,
+                              width: 200,
+                              child: TextButton(
+                                onPressed: () async {
+                                  final newCustomer = await showDialog<Customer>(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AddCustomer(widget: widget);
+                                      }
+                                  );
+                                  if (newCustomer != null) {
+                                    setState(() {
+                                      widget.customers.add(newCustomer);
+                                    });
+                                  }
+                                },
+                                child: const Text('Yeni Müşteri Ekle'),
+                              ),
                             ),
                             Container(
                               width: 200,
                               height: 50,
                               child: DropdownButtonFormField(
-                                items: widget.customerNames.map((String value) {
+                                items: widget.customers.map((Customer value) {
                                   return DropdownMenuItem(
                                     value: value,
-                                    child: Text(value),
+                                    child: Text(value.name ?? ''),
                                   );
                                 }).toList(),
+                                hint: data.customer == null
+                                    ? const Text('Müşteri Seçiniz')
+                                    : Text(data.customer!.name ?? '', style: const TextStyle(color: Colors.black)),
                                 onChanged: (value) {
                                   setState(() {
-                                    data.customerName = value as String;
-                                    selectedCustomerName = value as String;
+                                    data.customer = value;
                                   });
                                 },
                               ),
@@ -134,6 +129,7 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                             Text('Toplam: ₺ ${totalPrice.roundToDouble()}'),
                             Text(
                                 'Masa Durumu: ${data.isActive! ? 'Açık' : 'Kapalı'}'),
+
                           ],
                         ),
                       ],
@@ -169,8 +165,46 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                        ref.read(accountInactiveProvider(widget.index + 1));
+                      onPressed: () async {
+                        await showDialog(context: context, builder:
+                          (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Hesap Kapat'),
+                              content: const Text('Hesap kapatılsın mı?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    ref.read(accountInactiveProvider(widget.index + 1));
+
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text(
+                                    'Nakit Kapat',
+                                    style: TextStyle(
+                                      color: Colors.deepPurple,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),TextButton(
+                                  onPressed: () {
+                                    ref.read(accountInactiveProvider(widget.index + 1));
+
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: const Text(
+                                    'Kredi Kartı ile Kapat',
+                                    style: TextStyle(
+                                      color: Colors.deepPurple,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
                         Navigator.of(context).pop();
                         print('Masa ${widget.index + 1} tıklandı');
                       },
@@ -216,6 +250,73 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
           error: (error, stackTrace) => Text('Error: $error'),
         );
       }),
+    );
+  }
+}
+
+class AddCustomer extends StatefulWidget {
+  AddCustomer({
+    super.key,
+    required this.widget,
+  });
+
+  final TablePopupWidget widget;
+
+  @override
+  State<AddCustomer> createState() => _AddCustomerState();
+}
+
+class _AddCustomerState extends State<AddCustomer> {
+  @override
+  Widget build(BuildContext context) {
+    Customer data = Customer();
+    return AlertDialog(
+      title: const Text('Yeni Müşteri Ekle'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Müşteri Adı',
+            ),
+            onChanged: (value) {
+              data.name = value;
+            },
+          ),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Müşteri Soyadı',
+            ),
+            onChanged: (value) {
+              data.surname = value;
+            },
+          ),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Müşteri E-posta',
+            ),
+            onChanged: (value) {
+              data.email = value;
+            },
+          ),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Müşteri Telefon',
+            ),
+            onChanged: (value) {
+              data.phone = value;
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(data);
+          },
+          child: const Text('Ekle'),
+        ),
+      ],
     );
   }
 }

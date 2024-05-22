@@ -1,11 +1,10 @@
-import 'dart:html';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
+import 'package:restaurant_management_system/src/model/customer.dart';
+import 'package:restaurant_management_system/src/model/dummy_list.dart';
 import 'package:restaurant_management_system/src/widgets/appbar.dart';
 import 'package:restaurant_management_system/src/providers/table_status_provider.dart';
 import 'package:restaurant_management_system/src/widgets/product_add_on_menu.dart';
@@ -28,31 +27,14 @@ class _HomeViewState extends ConsumerState<HomeView> {
   void initState() {
     super.initState();
   }
+  List<Customer> customerNames = Customers().get();
+
 
   @override
   Widget build(BuildContext context) {
     int count = 0;
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey();
-    List<String> customerNames = [
-      'Ali',
-      'Veli',
-      'Ayşe',
-      'Fatma',
-      'Mehmet',
-      'Zeynep',
-      'Kemal',
-      'Hüseyin',
-      'Hasan',
-      'Hülya',
-      'Nur',
-      'Emre',
-      'Eren',
-      'Ece',
-      'Elif',
-      'Ebru',
-      'Ezgi',
 
-    ];
     return ProviderScope(
       child: Scaffold(
         endDrawer: Drawer(
@@ -113,8 +95,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                     data.length,
                     (index) => GestureDetector(
                       onTap: () {
-                        _showPopup(context, index, customerNames, (String name) {
-                          customerNames.add(name);
+                        _showPopup(context, index, customerNames, (Customer customer) {
+                          customerNames.add(customer);
                         });
                         print('Masa ${index + 1} tıklandı');
                       },
@@ -160,14 +142,14 @@ class _HomeViewState extends ConsumerState<HomeView> {
   }
 }
 
-void _showPopup(BuildContext context, int index, List<String> customerNames, Function(String) addNameToList) {
+void _showPopup(BuildContext context, int index, List<Customer> customers, Function(Customer) addCustomerToList) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return TablePopupWidget(
         index: index,
-          customerNames:customerNames,
-        addNameToList: addNameToList,
+        customers: customers,
+        addCustomerToList: addCustomerToList,
 
       );
     },

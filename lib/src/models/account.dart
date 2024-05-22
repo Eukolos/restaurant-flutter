@@ -1,3 +1,5 @@
+import 'package:restaurant_management_system/src/model/customer.dart';
+
 class Order {
   int? id;
   String? name;
@@ -34,9 +36,10 @@ class Account {
   double? totalPrice;
   bool? isActive;
   List<Order?>? orders;
-  String customerName = 'Müşteri Adı';
+  Customer? customer;
+  DateTime? date;
 
-  Account({this.id, this.totalPrice, this.isActive, this.orders});
+  Account({this.id, this.totalPrice, this.isActive, this.orders, this.customer, this.date});
 
   Account.fromJson(Map<String, dynamic> json) {
     id = json['id'];
