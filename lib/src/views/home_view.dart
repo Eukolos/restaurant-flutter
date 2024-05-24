@@ -7,6 +7,7 @@ import 'package:restaurant_management_system/src/model/customer.dart';
 import 'package:restaurant_management_system/src/model/dummy_list.dart';
 import 'package:restaurant_management_system/src/widgets/appbar.dart';
 import 'package:restaurant_management_system/src/providers/table_status_provider.dart';
+import 'package:restaurant_management_system/src/widgets/customer_list_on_menu.dart';
 import 'package:restaurant_management_system/src/widgets/product_add_on_menu.dart';
 import 'package:restaurant_management_system/src/widgets/product_list_on_menu.dart';
 import 'package:restaurant_management_system/src/widgets/table_add_or_del.dart';
@@ -75,6 +76,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
                   _showPopupProductList(context, 1);
                 },
               ),
+              ListTile(
+                title: const Text('Müşteri Listesi'),
+                onTap: () {
+                  _showPopupCustomerList(context, customerNames);
+                },
+              ),
+
             ],
           ),
         ),
@@ -163,6 +171,15 @@ void _showPopupProductList(BuildContext context, int id) {
         return ProductListWidgetOnMenu(id: id);
       });
 }
+
+void _showPopupCustomerList(BuildContext context, List<Customer> customers) {
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomerListOnMenu(customers: customers);
+      });
+}
+
 
 void _showPopupProductAdd(BuildContext context, int id) {
   showDialog(

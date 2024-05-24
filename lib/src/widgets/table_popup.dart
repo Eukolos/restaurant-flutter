@@ -111,12 +111,12 @@ class _TablePopupWidgetState extends ConsumerState<TablePopupWidget> {
                                 items: widget.customers.map((Customer value) {
                                   return DropdownMenuItem(
                                     value: value,
-                                    child: Text(value.name ?? ''),
+                                    child: Text("${value.name} ${value.surname}"  ?? ''),
                                   );
                                 }).toList(),
                                 hint: data.customer == null
                                     ? const Text('Müşteri Seçiniz')
-                                    : Text(data.customer!.name ?? '', style: const TextStyle(color: Colors.black)),
+                                    : Text("${data.customer!.name} ${data.customer!.surname}" ?? '', style: const TextStyle(color: Colors.black)),
                                 onChanged: (value) {
                                   setState(() {
                                     data.customer = value;
@@ -306,6 +306,19 @@ class _AddCustomerState extends State<AddCustomer> {
             onChanged: (value) {
               data.phone = value;
             },
+          ),
+          SizedBox(
+            width: 250,
+            child: TextField(
+              minLines: 2,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Müşteri Adres',
+              ),
+              onChanged: (value) {
+                data.address = value;
+              },
+            ),
           ),
         ],
       ),
